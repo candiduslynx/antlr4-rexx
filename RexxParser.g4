@@ -1,16 +1,17 @@
 grammar RexxParser;
+import RexxLexer;
 
 file                        :   program_ EOF;
 
 /* The first part introduces the overall structure of a program */
 program_                    : ncl? instruction_list? ;
   ncl                       : null_clause+ ;
-    null_clause             : ';' label_list? ;
-      label_list            : ( LABEL ';' )+ ;
+    null_clause             : SYM_Semicolon label_list? ;
+      label_list            : ( LABEL SYM_Semicolon )+ ;
   instruction_list          : instruction_+ ;
     instruction_            : group_ | single_instruction ncl ;
 single_instruction          : assignment_ | keyword_instruction | command_ ;
-  assignment_               : VAR_SYMBOL '=' expression_ ;
+  assignment_               : VAR_SYMBOL OP_Equation expression_ ;
   keyword_instruction       :
                             (
                             address_
@@ -86,7 +87,7 @@ address_                    : KWD_ADDRESS
       error_                : KWD_ERROR resourceo ;
     adei                    : error_ input_? | input_ error_? ;
 resources_                  : ( KWD_STREAM | KWD_STEM ) VAR_SYMBOL ;
-  vref                      : '(' var_symbol_ ')' ;
+  vref                      : SYM_Bracket_Round_O var_symbol_ SYM_Bracket_Round_C ;
     var_symbol_             : VAR_SYMBOL ;
 arg_                        : KWD_ARG template_list? ;
 call_                       : KWD_CALL ( callon_spec | taken_constant expression_list? ) ;
@@ -175,18 +176,56 @@ symbol_                     : VAR_SYMBOL | CONST_SYMBOL | NUMBER ;
 expression_                 : expr_ ;
   expr_                     : expr_alias ;
     expr_alias              : and_expression | expr_alias or_operator and_expression ;
-      or_operator           : '|' | '&&' ;
+      or_operator           : OP_Or | OP_Xor ;
       and_expression        : comparison_ | and_expression '&' comparison_ ;
-comparison_                  : concatenation_ | comparison_ comparison_operator concatenation_ ;
+comparison_                 : concatenation_ | comparison_ comparison_operator concatenation_ ;
   comparison_operator       : normal_compare | strict_compare ;
-    normal_compare          : '=' | '\\=' | '<>' | '><' | '>' | '<' | '>=' | '<=' | '\\>' | '\\<' ;
-    strict_compare          : '==' | '\\==' | '>>' | '<<' | '>>=' | '<<=' | '\\>>' | '\\<<' ;
+    normal_compare          :
+                            (
+                            CMP_Eq
+                            |
+                            CMP_NEq
+                            |
+                            CMP_LM
+                            |
+                            CMP_ML
+                            |
+                            CMP_M
+                            |
+                            CMP_L
+                            |
+                            CMP_MEq
+                            |
+                            CMP_LEq
+                            |
+                            CMP_NM
+                            |
+                            CMP_NL
+                            ) ;
+    strict_compare          :
+                            (
+                            CMP_Strict_Eq
+                            |
+                            CMP_Strict_NEq
+                            |
+                            CMP_Strict_M
+                            |
+                            CMP_Strict_L
+                            |
+                            CMP_Strict_ME
+                            |
+                            CMP_Strict_LE
+                            |
+                            CMP_Strict_NM
+                            |
+                            CMP_Strict_NL
+                            ) ;
 concatenation_              : addition_ | concatenation_ ( ' ' | '||' ) addition_ ;
 addition_                   : multiplication_ | addition_ additive_operator multiplication_ ;
-  additive_operator         : '+' | '-' ;
+  additive_operator         : OP_Add | OP_Sub ;
 multiplication_             : power_expression | multiplication_ multiplicative_operator power_expression ;
-  multiplicative_operator   : '*' | '/' | '//' | '%' ;
-power_expression            : prefix_expression | power_expression '**' prefix_expression ;
+  multiplicative_operator   : OP_Mul | OP_Div | OP_Remainder | OP_Quotinent ;
+power_expression            : prefix_expression | power_expression OP_Power prefix_expression ;
   prefix_expression         : ( '+' | '-' | '\\' ) prefix_expression | term_  ;
     term_                   : symbol_ | STRING | function_ | '(' expr_alias ')' ;
       function_             : taken_constant '(' expression_list? ')' ;
