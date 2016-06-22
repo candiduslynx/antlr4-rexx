@@ -7,6 +7,11 @@ BETWEEN                         :   Between_                -> channel(HIDDEN) ;
 // Delimeter for expresstions
 DELIM                           :   Delim_ ;
 
+// Label, const, var, number
+NUMBER                          :   Number_ ;
+CONST_SYMBOL                    :   Const_symbol_ ;
+VAR_SYMBOL                      :   Var_Symbol_ ;
+
 // Keywords
 KWD_ADDRESS                     :   A D D R E S S ;
 KWD_APPEND                      :   A P P E N D ;
@@ -72,12 +77,6 @@ KWD_VERSION                     :   V E R S I O N ;
 KWD_WHEN                        :   W H E N ;
 KWD_WHILE                       :   W H I L E ;
 KWD_WITH                        :   W I T H ;
-
-// Label, const, var, number
-
-NUMBER                          :   Number_ ;
-CONST_SYMBOL                    :   Const_symbol_ ;
-VAR_SYMBOL                      :   Var_Symbol_ ;
 
 // Brackets
 BR_O                            :   Br_O_ ;
@@ -182,8 +181,6 @@ fragment Other_blank_character  :   Form_Feed_
                                 |   VTab_
                                 ;
 
-// Keywords - consist only of letters (see the lowest section desctibing chars)
-
 // Label, const, var, number
 // Label, var
 fragment Var_Symbol_            :   General_letter Var_symbol_char*;
@@ -222,7 +219,9 @@ fragment General_letter         :   Underscore_
                                 |   Z
                                 |   Extra_letter
                                 ;
-fragment Extra_letter           :   Underscore_ ;   // Dummy
+fragment Extra_letter           :   Hash_
+                                |   At_
+                                ;
 // Const
 fragment Const_symbol_          :   Stop_ CONST_SYMBOL_RESERVED
                                 |   Digit_ Const_symbol_char*
@@ -358,6 +357,8 @@ fragment Less_                  :   '<' ;
 fragment Percent_sign_          :   '%' ;
 fragment VBar_                  :   '|' ;
 fragment Amp_                   :   '&' ;
+fragment Hash_                  :   '#' ;
+fragment At_                    :   '@' ;
 
 // Letters
 fragment A                      :   ('a'|'A');

@@ -15,7 +15,7 @@ program_                    :   ncl? instruction_list? ;
 single_instruction          :   assignment
                             |   keyword_instruction
                             |   command_
-                            |   ;
+                            ;
   assignment                :   VAR_SYMBOL EQ expression ;
   keyword_instruction       :   address_
                             |   arg_
@@ -92,8 +92,6 @@ address_                    :   KWD_ADDRESS
                             |   input error?
                             ;
 resources                   :   ( KWD_STREAM | KWD_STEM ) VAR_SYMBOL ;
-  vref                      :   BR_O var_symbol BR_C ;
-    var_symbol              :   VAR_SYMBOL ;
 arg_                        :   KWD_ARG template_list? ;
 call_                       :   KWD_CALL ( callon_spec | taken_constant call_parms? ) ;
   callon_spec               :   KWD_ON callable_condition ( KWD_NAME taken_constant )?
@@ -146,7 +144,8 @@ do_specification            :   do_repetitive
       dof                   :   KWD_FOR forexpr ;
         forexpr             :   expression ;
 drop_                       :   KWD_DROP variable_list ;
-  variable_list             :   ( vref | var_symbol )+ ;
+  variable_list             :   ( vref | VAR_SYMBOL )+ ;
+    vref                    :   BR_O VAR_SYMBOL BR_C ;
 exit_                       :   KWD_EXIT expression? ;
 interpret_                  :   KWD_INTERPRET expression ;
 iterate_                    :   KWD_ITERATE VAR_SYMBOL? ;
@@ -169,7 +168,7 @@ parse_                      :   KWD_PARSE KWD_UPPER? parse_type template_list? ;
                             |   KWD_VERSION
                             ;
     parse_value             :   KWD_VALUE expression? KWD_WITH ;
-    parse_var               :   KWD_VAR var_symbol ;
+    parse_var               :   KWD_VAR VAR_SYMBOL ;
 procedure_                  :   KWD_PROCEDURE ( KWD_EXPOSE variable_list )? ;
 pull_                       :   KWD_PULL template_list? ;
 push_                       :   KWD_PUSH expression? ;
@@ -189,9 +188,7 @@ trace_                      :   KWD_TRACE ( taken_constant | valueexp )? ;
 upper_                      :   KWD_UPPER VAR_SYMBOL+ ; // if stem -> signal of error (cannot do 'upper j.')
 
 /* Note: The next section describes templates. */
-template_list               :   template_
-                            |   template_? COMMA template_list?
-                            ;
+template_list               :   ( template_? COMMA )* template_ ;
   template_                 :   ( trigger_ | target_ )+ ;
     target_                 :   VAR_SYMBOL
                             |   STOP
@@ -200,9 +197,8 @@ template_list               :   template_
                             |   positional_
                             ;
       pattern_              :   STRING
-                            |   vrefp
+                            |   vref
                             ;
-        vrefp               :   BR_O VAR_SYMBOL BR_C ;
       positional_           :   absolute_positional
                             |   relative_positional
                             ;
@@ -210,7 +206,7 @@ template_list               :   template_
                             |   EQ position_
                             ;
           position_         :   NUMBER
-                            |   vrefp
+                            |   vref
                             ;
       relative_positional   :   (PLUS | MINUS) position_ ;
 
@@ -220,19 +216,12 @@ symbol                      :   VAR_SYMBOL
                             |   NUMBER
                             ;
 expression                  :   expr ;
-  expr                      :   expr_alias ;
-    expr_alias              :   and_expression
-                            |   expr_alias or_operator and_expression
-                            ;
+  expr                      :   ( and_expression or_operator )* and_expression ;
       or_operator           :   OR
                             |   XOR
                             ;
-      and_expression        :   comparison
-                            |   and_expression AND comparison
-                            ;
-comparison                  :   concatenation
-                            |   comparison comparison_operator concatenation
-                            ;
+      and_expression        :   ( comparison AND )* comparison ;
+comparison                  :   ( concatenation comparison_operator )* concatenation ;
   comparison_operator       :   normal_compare
                             |   strict_compare
                             ;
@@ -256,34 +245,23 @@ comparison                  :   concatenation
                             |   CMPS_NM
                             |   CMPS_NL
                             ;
-concatenation               :   addition
-                            |   concatenation CONCAT? addition
-                            ;
-addition                    :   multiplication
-                            |   addition additive_operator multiplication
-                            ;
+concatenation               :   ( addition CONCAT? )* addition ;
+addition                    :   ( multiplication additive_operator )* multiplication ;
   additive_operator         :   PLUS
                             |   MINUS
                             ;
-multiplication              :   power_expression
-                            |   multiplication multiplicative_operator power_expression
+multiplication              :   ( power_expression multiplicative_operator )* power_expression
                             ;
   multiplicative_operator   :   MUL
                             |   DIV
                             |   QUOTINENT
                             |   REMAINDER
                             ;
-power_expression            :   prefix_expression
-                            |   power_expression POW prefix_expression
-                            ;
-  prefix_expression         :   ( PLUS | MINUS | NOT ) prefix_expression
-                            |   term
-                            ;
+power_expression            :   ( prefix_expression POW )* prefix_expression ;
+  prefix_expression         :   ( PLUS | MINUS | NOT )* term ;
     term                    :   symbol
                             |   STRING
                             |   function_
-                            |   BR_O expr_alias  BR_C
+                            |   BR_O expr  BR_C
                             ;
       function_             :   taken_constant BR_O expression_list? BR_C ;
-
-stringie:STRING;
