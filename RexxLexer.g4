@@ -1,44 +1,13 @@
 lexer grammar RexxLexer;
 
-// Comments go to hidden
-COMMENT                         :   Comment_              -> channel (HIDDEN) ;
-fragment Comment_               :   Comment_S Commentpart*? ( '*' | '/' )*? Comment_E ;
-fragment Comment_E              :   '*/' ;
-fragment Comment_S              :   '/*' ;
-fragment Commentpart            :   ( '/'* | '*'+ ) Comment_char_+
-                                |   Comment_
-                                ;
-fragment Comment_char_          :   String_or_comment_char
-                                |   '"'
-                                |   '\''
-                                |   EOL ;
+// Main rules
+// Skippable stuff
+BETWEEN                         :   Between_                -> channel(HIDDEN) ;
 
-DELIM                           :   EOS
-                                |   SCOL
-                                |   EOL
-                                ;
-fragment EOS                    :   EOF ;
-fragment SCOL                   :   ';' ;
-fragment EOL                    :   '\n'
-                                |   '\r'
-                                |   '\n\r'
-                                |   '\r\n'
-                                ;
+// Delimeter for expresstions
+DELIM                           :   Delim_ ;
 
-// Whitespaces - not so sure
-WHITESPACES                     :   DELIM
-                                |   WS_+
-                                ;
-fragment WS_                    :   WS+                  -> channel(HIDDEN) ;
-fragment WS                     :   ' '
-                                |   '\r'
-                                |   '\f'
-                                |   '\t'
-                                |   '\n'
-                                |   '\u000b'
-                                ;
 // Keywords
-
 KWD_ADDRESS                     :   A D D R E S S ;
 KWD_APPEND                      :   A P P E N D ;
 KWD_ARG                         :   A R G ;
@@ -104,20 +73,158 @@ KWD_WHEN                        :   W H E N ;
 KWD_WHILE                       :   W H I L E ;
 KWD_WITH                        :   W I T H ;
 
-//-----------------------
+// Label, const, var, number
+
+NUMBER                          :   Number_ ;
+CONST_SYMBOL                    :   Const_symbol_ ;
 VAR_SYMBOL                      :   Var_Symbol_ ;
-fragment Var_Symbol_            :   General_letter Var_symbol_char* ;
-fragment General_letter         :   [\_\!\?A-Za-z]
-                                |   Extra_letter
+
+// Brackets
+BR_O                            :   Br_O_ ;
+BR_C                            :   Br_C_ ;
+
+// String and concatenation
+STRING                          :   String_ ;
+CONCAT                          :   Blank
+                                |   VBar_ VBar_ ;
+
+// Operations
+// Assignment (also comparison and template operator)
+EQ                              :   Eq_ ;
+// Math: +, -, *, /, //, %, **
+// Note: '+' and '-' are also used in prefix expressions and templates
+PLUS                            :   Plus_ ;
+MINUS                           :   Minus_ ;
+MUL                             :   Asterisk_ ;
+DIV                             :   Slash_ ;
+QUOTINENT                       :   Slash_ Slash_ ;
+REMAINDER                       :   Percent_sign_ ;
+POW                             :   Asterisk_ Asterisk_ ;
+// Logical: NOT, OR, AND, XOR
+// Note: '\\' also used for prefix expressions
+NOT                             :   Not_ ;
+OR                              :   VBar_ ;
+XOR                             :   Amp_ Amp_ ;
+AND                             :   Amp_ ;
+// Comparison
+// Strict comparison: ==, \==, >>, <<, >>=, <<=, \>>, \<<
+CMPS_Eq                         :   Eq_ Eq_ ;
+CMPS_Neq                        :   Not_ Eq_ Eq_ ;
+CMPS_M                          :   More_ More_ ;
+CMPS_L                          :   Less_ Less_ ;
+CMPS_MEq                        :   More_ More_ Eq_ ;
+CMPS_LEq                        :   Less_ Less_ Eq_ ;
+CMPS_NM                         :   Not_ More_ More_ ;
+CMPS_NL                         :   Not_ Less_ Less_ ;
+// Non-strict: =, \=, <>, ><, >, <, >=, <=, \>, \<
+// Note: '=' is taken from Assignment (EQ)
+CMP_NEq                         :   Not_ Eq_ ;
+CMP_LM                          :   Less_ More_ ;
+CMP_ML                          :   More_ Less_ ;
+CMP_M                           :   More_ ;
+CMP_L                           :   Less_ ;
+CMP_MEq                         :   More_ Eq_ ;
+CMP_LEq                         :   Less_ Eq_ ;
+CMP_NM                          :   Not_ More_ ;
+CMP_NL                          :   Not_ Less_ ;
+
+// Additional elements
+// .
+STOP                            :   Stop_ ;
+// ,
+COMMA                           :   Comma_ ;
+// :
+COLON                           :   Colon_  ;
+
+// --------------------------------------------------------
+// Fragments
+// Skippable stuff
+fragment Between_               :   Comment_
+                                |   Whitespaces_
                                 ;
-fragment Var_symbol_char        :   General_letter
-                                |   Digit_
-                                |   '.'
+fragment Whitespaces_           :   Blank_run ;
+fragment Blank_run              :   ( Blank | Continue_ )+ ;
+fragment Continue_              :   Comma_ ( Comment_ | Blank )*? Eol_;
+
+// Comments
+fragment Comment_               :   Comment_S Commentpart*? ( Asterisk_ | Slash_ )*? Comment_E ;
+fragment Comment_E              :   Asterisk_ Slash_ ;
+fragment Comment_S              :   Slash_ Asterisk_ ;
+fragment Commentpart            :   ( Slash_* | Asterisk_+ ) Comment_char_+
+                                |   Comment_
+                                ;
+fragment Comment_char_          :   String_or_comment_char
+                                |   Quote_
+                                |   Apostrophe_
+                                |   Eol_
                                 ;
 
-OP_Assign                       :   '=' ;
-CONST_SYMBOL                    :   Const_symbol_ ;
-Const_symbol_                   :   '.' CONST_SYMBOL_RESERVED
+// Delimeter
+fragment Delim_                 :   Scol_ EOL?
+                                |   EOL EOS?
+                                |   EOS
+                                ;
+fragment EOS                    :   EOF ;
+fragment EOL                    :   Eol_+ ;
+fragment Eol_                   :   New_Line_ Caret_Return_
+                                |   Caret_Return_ New_Line_
+                                |   New_Line_
+                                |   Caret_Return_
+                                ;
+
+// Whitespaces
+fragment Bo                     :   Blank+ ;
+fragment Blank                  :   Space_
+                                |   Other_blank_character
+                                ;
+fragment Other_blank_character  :   Form_Feed_
+                                |   HTab_
+                                |   VTab_
+                                ;
+
+// Keywords - consist only of letters (see the lowest section desctibing chars)
+
+// Label, const, var, number
+// Label, var
+fragment Var_Symbol_            :   General_letter Var_symbol_char*;
+fragment Var_symbol_char        :   General_letter
+                                |   Digit_
+                                |   Stop_
+                                ;
+fragment General_letter         :   Underscore_
+                                |   Exclamation_mark_
+                                |   Question_mark_
+                                |   A
+                                |   B
+                                |   C
+                                |   D
+                                |   E
+                                |   F
+                                |   G
+                                |   H
+                                |   I
+                                |   J
+                                |   K
+                                |   L
+                                |   M
+                                |   N
+                                |   O
+                                |   P
+                                |   Q
+                                |   R
+                                |   S
+                                |   T
+                                |   U
+                                |   V
+                                |   W
+                                |   X
+                                |   Y
+                                |   Z
+                                |   Extra_letter
+                                ;
+fragment Extra_letter           :   Underscore_ ;   // Dummy
+// Const
+fragment Const_symbol_          :   Stop_ CONST_SYMBOL_RESERVED
                                 |   Digit_ Const_symbol_char*
                                 ;
 // Reserved constant symbols:  .MN, .RESULT, .RC, .RS, or .SIGL
@@ -134,118 +241,125 @@ fragment CONST_RS               :   R S ;
 fragment CONST_SIGL             :   S I G L ;
 fragment Digit_                 :   [0-9] ;
 fragment Const_symbol_char      :   Var_symbol_char
-                                |   ('+' | '-')
+                                |   Plus_
+                                |   Minus_
                                 ;
-fragment Extra_letter           :   '_' ;   // Dummy
-NUMBER                          :   Number_ ;
-fragment Number_                :   Plain_number Exponent_? ;
-fragment Plain_number           :   '.'? Digit_+
-                                |   Digit_+ '.' Digit_*
+// Number
+fragment Number_                :   Plain_number Exponent_?
+                                |   Binary_string
+                                |   Hex_string
                                 ;
-fragment Exponent_              :   E ( '+' | '-' )? Digit_+ ;
+fragment Plain_number           :   Digit_+ Stop_? Digit_*
+                                |   Stop_ Digit_+
+                                ;
+fragment Exponent_              :   E ( Plus_ | Minus_ )? Digit_+ ;
+// Hex string
+fragment Hex_string             :   Quoted_Hex_string X ;
+fragment Quoted_Hex_string      :   Quote_ Hex_string_ Quote_
+                                |   Apostrophe_ Hex_string_ Apostrophe_
+                                ;
+fragment Hex_string_            :   Hex_digit Break_hex_digit_pair*
+                                |   ( Hex_digit Hex_digit Break_hex_digit_pair* )?
+                                ;
+fragment Hex_digit              :   Digit_
+                                |   A
+                                |   B
+                                |   C
+                                |   D
+                                |   E
+                                |   F
+                                ;
+fragment Break_hex_digit_pair   :   Bo Hex_digit Hex_digit ;
+// Bin string
+fragment Binary_string          :   Quoted_Bin_string B ;
+fragment Quoted_Bin_string      :   Quote_ Bin_string_ Quote_
+                                |   Apostrophe_ Bin_string_ Apostrophe_
+                                ;
+fragment Bin_string_            :   Bin_digit Bin_digit? Bin_digit? Break_bin_digit_quad*
+                                |   ( Bin_digit Bin_digit Bin_digit Bin_digit Break_bin_digit_quad* ) ?
+                                ;
+fragment Bin_digit              :   '0'
+                                |   '1'
+                                ;
+fragment Break_bin_digit_quad : Bo Bin_digit Bin_digit Bin_digit Bin_digit ;
 
-Add                             :   '+' ;
-Sub                             :   '-' ;
-PRE_Not                         :   '\\' ;
-
-
-OP_Or                           :   '|' ;
-OP_Xor                          :   '&&' ;
-OP_And                          :   '&' ;
-OP_Mul                          :   '*' ;
-OP_Div                          :   '/' ;
-OP_Quotinent                    :   '//' ;
-OP_Remainder                    :   '%' ;
-OP_Pow                          :   '**' ;
-
-BR_O                            :   '(' ;
-BR_C                            :   ')' ;
-
-CMP_Eq                          :   '=' ;
-CMP_NEq                         :   '\\=' ;
-CMP_LM                          :   '<>' ;
-CMP_ML                          :   '><' ;
-CMP_M                           :   '>' ;
-CMP_L                           :   '<' ;
-CMP_MEq                         :   '>=' ;
-CMP_LEq                         :   '<=' ;
-CMP_NM                          :   '\\>' ;
-CMP_NL                          :   '\\<' ;
-
-CMPS_Eq                         :   '==' ;
-CMPS_Neq                        :   '\\==' ;
-CMPS_M                          :   '>>' ;
-CMPS_L                          :   '<<' ;
-CMPS_MEq                        :   '>>=' ;
-CMPS_LEq                        :   '<<=' ;
-CMPS_NM                         :   '\\>>' ;
-CMPS_NL                         :   '\\<<' ;
-
-CONCAT                          :   '||' ;
-
-STRING                          :   String_ ;
+// String and concatenation
 fragment String_                :   Quoted_string ;
 fragment Quoted_string          :   Quotation_mark_string
                                 |   Apostrophe_string
                                 ;
-fragment Quotation_mark_string  :   '"' (String_char | Embedded_quotation_mark | '\'')* '"' ;
-fragment Embedded_quotation_mark:   '""' ;
-fragment Apostrophe_string      :   '\'' (String_char | Embedded_apostrophe | '"')* '\'' ;
-fragment Embedded_apostrophe    :   '\'\'' ;
-fragment String_char            :   String_or_comment_char | '*' | '/' ;
+fragment Quotation_mark_string  :   Quote_ (String_char | Embedded_quotation_mark | Apostrophe_)* Quote_ ;
+fragment Embedded_quotation_mark:   Quote_ Quote_ ;
+fragment Apostrophe_string      :   Apostrophe_ (String_char | Embedded_apostrophe | Quote_)* Apostrophe_ ;
+fragment Embedded_apostrophe    :   Apostrophe_ Apostrophe_ ;
+fragment String_char            :   String_or_comment_char | Asterisk_ | Slash_ ;
 fragment String_or_comment_char :   Digit_
-                                |   '.'
+                                |   Stop_
                                 |   Special
                                 |   Operator_only
                                 |   General_letter
                                 |   Blank
                                 |   Other_character
                                 ;
-fragment Special                :   ','
-                                |   ':'
-                                |   ';'
-                                |   ')'
-                                |   '('
+fragment Special                :   Comma_
+                                |   Colon_
+                                |   Scol_
+                                |   Br_C_
+                                |   Br_O_
                                 ;
-fragment Blank                  :   ' '
-                                |   Other_blank_character
-                                ;
-fragment Other_blank_character  :   '\r'
-                                |   '\f'
-                                |   '\t'
-                                |   '\n'
-                                |   '\u000b'
-                                ;
-fragment Other_character        :   '_';    // Dummy
-
-fragment Operator_only          :   '+'
-                                |   '-'
-                                |   '%'
-                                |   '|'
-                                |   '&'
-                                |   '='
+fragment Operator_only          :   Plus_
+                                |   Minus_
+                                |   Percent_sign_
+                                |   VBar_
+                                |   Amp_
+                                |   Eq_
                                 |   Not_
-                                |   '>'
-                                |   '<'
+                                |   More_
+                                |   Less_
                                 ;
-fragment Not_                   :   '\\'
+
+fragment Other_character        :   ~[\"\'\n\r\*/] ;
+fragment Not_                   :   Backslash_
                                 |   Other_negator
                                 ;
-fragment Other_negator          :   '^'
-                                |   '¬'
+fragment Other_negator          :   Caret_
+                                |   Logical_Not_
+                                |   Slash_
                                 ;
-//-----------------------
 
+// Single characters
+fragment Stop_                  :   '.' ;
+fragment Comma_                 :   ',' ;
+fragment Colon_                 :   ':' ;
+fragment Scol_                  :   ';' ;
+fragment Eq_                    :   '=' ;
+fragment Plus_                  :   '+' ;
+fragment Minus_                 :   '-' ;
+fragment Caret_                 :   '^' ;
+fragment Logical_Not_           :   '¬' ;
+fragment Underscore_            :   '_' ;
+fragment Exclamation_mark_      :   '!' ;
+fragment Question_mark_         :   '?' ;
+fragment Br_O_                  :   '(' ;
+fragment Br_C_                  :   ')' ;
+fragment Space_                 :   ' ' ;
+fragment Form_Feed_             :   '\f' ;
+fragment HTab_                  :   '\t' ;
+fragment VTab_                  :   '\u000b' ;
+fragment Caret_Return_          :   '\r' ;
+fragment New_Line_              :   '\n' ;
+fragment Quote_                 :   '"' ;
+fragment Apostrophe_            :   '\'' ;
+fragment Slash_                 :   '/' ;
+fragment Backslash_             :   '\\' ;
+fragment Asterisk_              :   '*' ;
+fragment More_                  :   '>' ;
+fragment Less_                  :   '<' ;
+fragment Percent_sign_          :   '%' ;
+fragment VBar_                  :   '|' ;
+fragment Amp_                   :   '&' ;
 
-
-
-
-
-
-
-
-
-//Letters are caseless
+// Letters
 fragment A                      :   ('a'|'A');
 fragment B                      :   ('b'|'B');
 fragment C                      :   ('c'|'C');
@@ -272,3 +386,5 @@ fragment W                      :   ('w'|'W');
 fragment X                      :   ('x'|'X');
 fragment Y                      :   ('y'|'Y');
 fragment Z                      :   ('z'|'Z');
+
+UNSUPPORTED_CHARACTER           :   . ;
