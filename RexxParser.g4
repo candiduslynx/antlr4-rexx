@@ -258,12 +258,12 @@ multiplication              :   power_expression ( multiplicative_operator power
                             ;
 power_expression            :   prefix_expression ( POW prefix_expression )* ;
   prefix_expression         :   ( PLUS | MINUS | NOT )* term ;
-    term                    :   symbol
-                            |   STRING
-                            |   function_
+    term                    :   function_
                             |   BR_O expr  BR_C
+                            |   symbol
+                            |   STRING
                             ;
-      function_             :   function_name BR_O expression_list? BR_C ;
+      function_             :   function_name function_parameters ;
         function_name       :   KWD_ADDRESS
                             |   KWD_ARG
                             |   KWD_DIGITS
@@ -273,3 +273,4 @@ power_expression            :   prefix_expression ( POW prefix_expression )* ;
                             |   KWD_VALUE
                             |   taken_constant
                             ;
+        function_parameters :   BR_O expression_list? BR_C ;

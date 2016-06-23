@@ -140,18 +140,18 @@ COLON                           :   Colon_  ;
 // Skippable stuff
 fragment Between_               :   ( Comment_ | Whitespaces_ )+ ;
 // Comments
-fragment Comment_               :   Comment_S Commentpart*? ( Asterisk_ )*? Comment_E ;
+fragment Comment_               :   Comment_S Commentpart*? Comment_E ;
 fragment Comment_E              :   Asterisk_ Slash_ ;
 fragment Comment_S              :   Slash_ Asterisk_ ;
 fragment Commentpart            :   Comment_
-                                |   ( Slash_* | Asterisk_+ ) Comment_char_+
+                                |   Commentpart_simple_+?
+                                ;
+fragment Commentpart_simple_    :   Slash_
+                                |   Asterisk_
+                                |   Comment_char_
                                 ;
 fragment Comment_char_          :   ~[/*];
-fragment Comment_char_2         :   String_or_comment_char
-                                |   Quote_
-                                |   Apostrophe_
-                                |   Eol_
-                                ;
+
 // Whitespaces
 fragment Whitespaces_           :   ( Blank | Continue_ )+ ;
 fragment Continue_              :   Comma_ ( Comment_ | Blank )*? Eol_;
