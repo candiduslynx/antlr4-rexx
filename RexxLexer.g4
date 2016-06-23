@@ -160,10 +160,8 @@ fragment Comment_char_          :   String_or_comment_char
 
 // Delimeter
 fragment Delim_                 :   Scol_ EOL?
-                                |   EOL EOS?
-                                |   EOS
+                                |   EOL
                                 ;
-fragment EOS                    :   EOF ;
 fragment EOL                    :   Eol_+ ;
 fragment Eol_                   :   New_Line_ Caret_Return_
                                 |   Caret_Return_ New_Line_
