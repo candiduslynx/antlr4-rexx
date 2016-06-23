@@ -7,11 +7,6 @@ BETWEEN                         :   Between_                -> channel(HIDDEN) ;
 // Delimeter for expresstions
 DELIM                           :   Delim_ ;
 
-// Label, const, var, number
-NUMBER                          :   Number_ ;
-CONST_SYMBOL                    :   Const_symbol_ ;
-VAR_SYMBOL                      :   Var_Symbol_ ;
-
 // Keywords
 KWD_ADDRESS                     :   A D D R E S S ;
 KWD_APPEND                      :   A P P E N D ;
@@ -86,6 +81,11 @@ BR_C                            :   Br_C_ ;
 STRING                          :   String_ ;
 CONCAT                          :   Blank
                                 |   VBar_ VBar_ ;
+// Label, const, var, number
+NUMBER                          :   Number_ ;
+CONST_SYMBOL                    :   Const_symbol_ ;
+VAR_SYMBOL                      :   Var_Symbol_ ;
+
 
 // Operations
 // Assignment (also comparison and template operator)
@@ -221,6 +221,7 @@ fragment General_letter         :   Underscore_
                                 ;
 fragment Extra_letter           :   Hash_
                                 |   At_
+                                |   Dollar_
                                 ;
 // Const
 fragment Const_symbol_          :   Stop_ CONST_SYMBOL_RESERVED
@@ -359,6 +360,7 @@ fragment VBar_                  :   '|' ;
 fragment Amp_                   :   '&' ;
 fragment Hash_                  :   '#' ;
 fragment At_                    :   '@' ;
+fragment Dollar_                :   '$' ;
 
 // Letters
 fragment A                      :   ('a'|'A');
