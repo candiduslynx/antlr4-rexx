@@ -139,21 +139,22 @@ COLON                           :   Colon_  ;
 // Fragments
 // Skippable stuff
 fragment Between_               :   ( Comment_ | Whitespaces_ )+ ;
-fragment Whitespaces_           :   ( Blank | Continue_ )+ ;
-fragment Continue_              :   Comma_ ( Comment_ | Blank )*? Eol_;
-
 // Comments
-fragment Comment_               :   Comment_S Commentpart*? ( Asterisk_ | Slash_ )*? Comment_E ;
+fragment Comment_               :   Comment_S Commentpart*? ( Asterisk_ )*? Comment_E ;
 fragment Comment_E              :   Asterisk_ Slash_ ;
 fragment Comment_S              :   Slash_ Asterisk_ ;
-fragment Commentpart            :   ( Slash_* | Asterisk_+ ) Comment_char_+
-                                |   Comment_
+fragment Commentpart            :   Comment_
+                                |   ( Slash_* | Asterisk_+ ) Comment_char_+
                                 ;
-fragment Comment_char_          :   String_or_comment_char
+fragment Comment_char_          :   ~[/*];
+fragment Comment_char_2         :   String_or_comment_char
                                 |   Quote_
                                 |   Apostrophe_
                                 |   Eol_
                                 ;
+// Whitespaces
+fragment Whitespaces_           :   ( Blank | Continue_ )+ ;
+fragment Continue_              :   Comma_ ( Comment_ | Blank )*? Eol_;
 
 // Delimeter
 fragment Delim_                 :   Scol_ EOL?
