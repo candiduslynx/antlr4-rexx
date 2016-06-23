@@ -251,7 +251,7 @@ comparison                  :   concatenation ( comparison_operator concatenatio
                             |   CMPS_NL
                             ;
 //concatenation               :   ( addition CONCAT? )* addition ;
-concatenation               :   addition ( CONCAT? addition )*? ;
+concatenation               :   addition ( CONCAT? addition )* ;
 //addition                    :   ( multiplication additive_operator )* multiplication ;
 addition                    :   multiplication ( additive_operator multiplication )* ;
   additive_operator         :   PLUS
