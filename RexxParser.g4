@@ -105,7 +105,6 @@ call_                       :   KWD_CALL ( callon_spec | taken_constant call_par
   call_parms                :   BR_O expression_list? BR_C
                             |   expression_list
                             ;
-//  expression_list           :   ( expr? COMMA )* expr ;
   expression_list           :   COMMA* expr ( COMMA+ expr )* ;
 do_specification            :   do_repetitive
                             |   do_simple
@@ -189,7 +188,6 @@ trace_                      :   KWD_TRACE ( taken_constant | valueexp )? ;
 upper_                      :   KWD_UPPER VAR_SYMBOL+ ; // if stem -> signal of error (cannot do 'upper j.')
 
 /* Note: The next section describes templates. */
-//template_list               :   ( template_? COMMA )* template_ ;
 template_list               :   COMMA* template_ ( COMMA+ template_ )* ;
   template_                 :   ( trigger_ | target_ )+? ;
     target_                 :   VAR_SYMBOL
@@ -218,14 +216,11 @@ symbol                      :   VAR_SYMBOL
                             |   NUMBER
                             ;
 expression                  :   expr ;
-//  expr                      :   ( and_expression or_operator )* and_expression ;
   expr                      :   and_expression ( or_operator and_expression )* ;
       or_operator           :   OR
                             |   XOR
                             ;
-//    and_expression        :   ( comparison AND )* comparison ;
       and_expression        :   comparison ( AND comparison )* ;
-//comparison                  :   ( concatenation comparison_operator )* concatenation ;
 comparison                  :   concatenation ( comparison_operator concatenation )* ;
   comparison_operator       :   normal_compare
                             |   strict_compare
@@ -250,21 +245,17 @@ comparison                  :   concatenation ( comparison_operator concatenatio
                             |   CMPS_NM
                             |   CMPS_NL
                             ;
-//concatenation               :   ( addition CONCAT? )* addition ;
 concatenation               :   addition ( CONCAT? addition )* ;
-//addition                    :   ( multiplication additive_operator )* multiplication ;
 addition                    :   multiplication ( additive_operator multiplication )* ;
   additive_operator         :   PLUS
                             |   MINUS
                             ;
-//multiplication              :   ( power_expression multiplicative_operator )* power_expression
 multiplication              :   power_expression ( multiplicative_operator power_expression )* ;
   multiplicative_operator   :   MUL
                             |   DIV
                             |   QUOTINENT
                             |   REMAINDER
                             ;
-//power_expression            :   ( prefix_expression POW )* prefix_expression ;
 power_expression            :   prefix_expression ( POW prefix_expression )* ;
   prefix_expression         :   ( PLUS | MINUS | NOT )* term ;
     term                    :   symbol
