@@ -138,11 +138,8 @@ COLON                           :   Colon_  ;
 // --------------------------------------------------------
 // Fragments
 // Skippable stuff
-fragment Between_               :   Comment_
-                                |   Whitespaces_
-                                ;
-fragment Whitespaces_           :   Blank_run ;
-fragment Blank_run              :   ( Blank | Continue_ )+ ;
+fragment Between_               :   ( Comment_ | Whitespaces_ )+ ;
+fragment Whitespaces_           :   ( Blank | Continue_ )+ ;
 fragment Continue_              :   Comma_ ( Comment_ | Blank )*? Eol_;
 
 // Comments
