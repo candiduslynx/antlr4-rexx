@@ -223,7 +223,7 @@ fragment Extra_letter           :   Hash_
                                 ;
 // Const
 fragment Const_symbol_          :   Stop_ CONST_SYMBOL_RESERVED
-                                |   Digit_ Const_symbol_char*
+                                |   Digit_ Var_symbol_char*
                                 ;
 // Reserved constant symbols:  .MN, .RESULT, .RC, .RS, or .SIGL
 fragment CONST_SYMBOL_RESERVED  :   CONST_MN
@@ -238,10 +238,6 @@ fragment CONST_RC               :   R C ;
 fragment CONST_RS               :   R S ;
 fragment CONST_SIGL             :   S I G L ;
 fragment Digit_                 :   [0-9] ;
-fragment Const_symbol_char      :   Var_symbol_char
-                                |   Plus_
-                                |   Minus_
-                                ;
 // Number
 fragment Number_                :   Plain_number Exponent_?
                                 |   Binary_string
