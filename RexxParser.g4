@@ -7,7 +7,75 @@ program_                    :   ncl? instruction_list? ;
   ncl                       :   null_clause+ ;
     null_clause             :   DELIM label_list?
                             |   label_list ;
-      label_list            :   ( VAR_SYMBOL COLON DELIM? )+ ;
+      label_list            :   ( var_symbol COLON DELIM? )+ ;
+        var_symbol          :   keyword
+                            |   VAR_SYMBOL
+                            ;
+          keyword           :   KWD_ADDRESS
+                            |   KWD_APPEND
+                            |   KWD_ARG
+                            |   KWD_BY
+                            |   KWD_CALL
+                            |   KWD_DIGITS
+                            |   KWD_DO
+                            |   KWD_DROP
+                            |   KWD_ELSE
+                            |   KWD_END
+                            |   KWD_ENGINEERING
+                            |   KWD_ERROR
+                            |   KWD_EXIT
+                            |   KWD_EXPOSE
+                            |   KWD_FAILURE
+                            |   KWD_FOR
+                            |   KWD_FOREVER
+                            |   KWD_FORM
+                            |   KWD_FUZZ
+                            |   KWD_HALT
+                            |   KWD_IF
+                            |   KWD_INPUT
+                            |   KWD_INTERPRET
+                            |   KWD_ITERATE
+                            |   KWD_LEAVE
+                            |   KWD_LINEIN
+                            |   KWD_LOSTDIGITS
+                            |   KWD_NAME
+                            |   KWD_NOP
+                            |   KWD_NORMAL
+                            |   KWD_NOTREADY
+                            |   KWD_NOVALUE
+                            |   KWD_NUMERIC
+                            |   KWD_OFF
+                            |   KWD_ON
+                            |   KWD_OPTIONS
+                            |   KWD_OTHERWISE
+                            |   KWD_OUTPUT
+                            |   KWD_PARSE
+                            |   KWD_PROCEDURE
+                            |   KWD_PULL
+                            |   KWD_PUSH
+                            |   KWD_QUEUE
+                            |   KWD_REPLACE
+                            |   KWD_RETURN
+                            |   KWD_SAY
+                            |   KWD_SCIENTIFIC
+                            |   KWD_SELECT
+                            |   KWD_SIGNAL
+                            |   KWD_SOURCE
+                            |   KWD_STEM
+                            |   KWD_STREAM
+                            |   KWD_SYNTAX
+                            |   KWD_THEN
+                            |   KWD_TO
+                            |   KWD_TRACE
+                            |   KWD_UNTIL
+                            |   KWD_UPPER
+                            |   KWD_VALUE
+                            |   KWD_VAR
+                            |   KWD_VERSION
+                            |   KWD_WHEN
+                            |   KWD_WHILE
+                            |   KWD_WITH           
+                            ;
   instruction_list          :   instruction+ ;
     instruction             :   group_
                             |   single_instruction ncl
@@ -16,7 +84,7 @@ single_instruction          :   assignment
                             |   keyword_instruction
                             |   command_
                             ;
-  assignment                :   VAR_SYMBOL EQ expression ;
+  assignment                :   var_symbol EQ expression ;
   keyword_instruction       :   address_
                             |   arg_
                             |   call_
@@ -45,7 +113,7 @@ group_                      :   do_
                             |   select_
                             ;
   do_                       :   do_specification ncl? instruction_list? do_ending ;
-    do_ending               :   KWD_END VAR_SYMBOL? ncl? ;
+    do_ending               :   KWD_END var_symbol? ncl? ;
   if_                       :   KWD_IF expression ncl? then_ else_? ;
     then_                   :   KWD_THEN ncl? instruction ;
     else_                   :   KWD_ELSE ncl? instruction ;
@@ -91,7 +159,7 @@ address_                    :   KWD_ADDRESS
     adei                    :   error input?
                             |   input error?
                             ;
-resources                   :   ( KWD_STREAM | KWD_STEM ) VAR_SYMBOL ;
+resources                   :   ( KWD_STREAM | KWD_STEM ) var_symbol ;
 arg_                        :   KWD_ARG template_list? ;
 call_                       :   KWD_CALL ( callon_spec | taken_constant call_parms? ) ;
   callon_spec               :   KWD_ON callable_condition ( KWD_NAME taken_constant )?
@@ -144,12 +212,12 @@ do_specification            :   do_repetitive
       dof                   :   KWD_FOR forexpr ;
         forexpr             :   expression ;
 drop_                       :   KWD_DROP variable_list ;
-  variable_list             :   ( vref | VAR_SYMBOL )+ ;
-    vref                    :   BR_O VAR_SYMBOL BR_C ;
+  variable_list             :   ( vref | var_symbol )+ ;
+    vref                    :   BR_O var_symbol BR_C ;
 exit_                       :   KWD_EXIT expression? ;
 interpret_                  :   KWD_INTERPRET expression ;
-iterate_                    :   KWD_ITERATE VAR_SYMBOL? ;
-leave_                      :   KWD_LEAVE VAR_SYMBOL? ;
+iterate_                    :   KWD_ITERATE var_symbol? ;
+leave_                      :   KWD_LEAVE var_symbol? ;
 nop_                        :   KWD_NOP ;
 numeric_                    :   KWD_NUMERIC ( numeric_digits | numeric_form | numeric_fuzz ) ;
   numeric_digits            :   KWD_DIGITS expression? ;
@@ -168,7 +236,7 @@ parse_                      :   KWD_PARSE KWD_UPPER? parse_type template_list? ;
                             |   KWD_VERSION
                             ;
     parse_value             :   KWD_VALUE expression? KWD_WITH ;
-    parse_var               :   KWD_VAR VAR_SYMBOL ;
+    parse_var               :   KWD_VAR var_symbol ;
 procedure_                  :   KWD_PROCEDURE ( KWD_EXPOSE variable_list )? ;
 pull_                       :   KWD_PULL template_list? ;
 push_                       :   KWD_PUSH expression? ;
@@ -185,12 +253,12 @@ signal_                     :   KWD_SIGNAL ( signal_spec | valueexp | taken_cons
                             |   KWD_LOSTDIGITS
                             ;
 trace_                      :   KWD_TRACE ( taken_constant | valueexp )? ;
-upper_                      :   KWD_UPPER VAR_SYMBOL+ ; // if stem -> signal of error (cannot do 'upper j.')
+upper_                      :   KWD_UPPER var_symbol+ ; // if stem -> signal of error (cannot do 'upper j.')
 
 /* Note: The next section describes templates. */
 template_list               :   ( template_? COMMA )* template_ ;
   template_                 :   ( trigger_ | target_ )+ ;
-    target_                 :   VAR_SYMBOL
+    target_                 :   var_symbol
                             |   STOP
                             ;
     trigger_                :   pattern_
@@ -211,7 +279,7 @@ template_list               :   ( template_? COMMA )* template_ ;
       relative_positional   :   (PLUS | MINUS) position_ ;
 
 // Note: The final part specifies the various forms of symbol, and expression.
-symbol                      :   VAR_SYMBOL
+symbol                      :   var_symbol
                             |   CONST_SYMBOL
                             |   NUMBER
                             ;
