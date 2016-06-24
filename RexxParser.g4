@@ -7,7 +7,8 @@ program_                    :   ncl? instruction_list? ;
   ncl                       :   null_clause+ ;
     null_clause             :   DELIM+ label_list?
                             |   label_list ;
-      label_list            :   ( VAR_SYMBOL COLON DELIM* )+ ;
+      label_list            :   ( label COLON DELIM* )+ ;
+        label               :   symbol ;
   instruction_list          :   instruction+ ;
     instruction             :   group_
                             |   single_instruction ncl?
@@ -110,10 +111,9 @@ do_specification            :   do_repetitive
                             |   do_simple
                             ;
   do_simple                 :   KWD_DO ;
-  do_repetitive             :   KWD_DO dorep
+  do_repetitive             :   KWD_DO KWD_FOREVER docond?
                             |   KWD_DO docond
-                            |   KWD_DO dorep docond
-                            |   KWD_DO KWD_FOREVER docond?
+                            |   KWD_DO dorep docond?
                             ;
   docond                    :   KWD_WHILE whileexpr
                             |   KWD_UNTIL untilexpr
@@ -189,7 +189,8 @@ upper_                      :   KWD_UPPER VAR_SYMBOL+ ; // if stem -> signal of 
 
 /* Note: The next section describes templates. */
 template_list               :   COMMA* template_ ( COMMA+ template_ )* ;
-  template_                 :   ( trigger_ | target_ )+? ;
+//  template_                 :   ( trigger_ | target_ )+? ;
+  template_                 :   ( trigger_ | target_ )+ ;
     target_                 :   VAR_SYMBOL
                             |   STOP
                             ;
