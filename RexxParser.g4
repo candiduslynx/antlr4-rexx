@@ -184,7 +184,24 @@ signal_                     :   KWD_SIGNAL ( signal_spec | valueexp | taken_cons
                             |   KWD_SYNTAX
                             |   KWD_LOSTDIGITS
                             ;
-trace_                      :   KWD_TRACE ( taken_constant | valueexp )? ;
+trace_                      :   KWD_TRACE ( NUMBER | trace_options )? ;
+  trace_options             :   prefix_option* trace_option
+                            |   prefix_option+
+                            ;
+    prefix_option           :   QUESTION
+                            |   EXCLAMATION
+                            ;
+    trace_option            :   KWD_NORMAL
+                            |   KWD_ALL
+                            |   KWD_COMMANDS
+                            |   KWD_ERROR
+                            |   KWD_FAILURE
+                            |   KWD_INTERMEDIATES
+                            |   KWD_LABELS
+                            |   KWD_OFF
+                            |   KWD_RESULTS
+                            |   KWD_SCAN
+                            ;
 upper_                      :   KWD_UPPER VAR_SYMBOL+ ; // if stem -> signal of error (cannot do 'upper j.')
 
 /* Note: The next section describes templates. */
