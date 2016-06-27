@@ -6,9 +6,12 @@ file                        :   program_ EOF ;
 program_                    :   ncl? instruction_list? ;
   ncl                       :   null_clause+ ;
     null_clause             :   DELIM+ label_list?
-                            |   label_list ;
+                            |   label_list
+                            |   include_statement
+                            ;
       label_list            :   ( label COLON DELIM* )+ ;
         label               :   symbol ;
+      include_statement     :   STMT_INCLUDE ;
   instruction_list          :   instruction+ ;
     instruction             :   group_
                             |   single_instruction ncl?

@@ -1,6 +1,10 @@
 lexer grammar RexxLexer;
 
 // Main rules
+// %INCLUDE statement
+STMT_INCLUDE                    :   Comment_S Percent_sign_ KWD_INCLUDE Bo Var_Symbol_+ Comment_E ;
+fragment KWD_INCLUDE            :   I N C L U D E ;
+
 // Skippable stuff
 BETWEEN                         :   Between_                -> channel(HIDDEN) ;
 
