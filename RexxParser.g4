@@ -20,7 +20,10 @@ single_instruction          :   assignment
                             |   keyword_instruction
                             |   command_
                             ;
-  assignment                :   VAR_SYMBOL EQ expression ;
+  assignment                :   var_symbol EQ expression ;
+    var_symbol              :   VAR_SYMBOL
+                            |   SPECIAL_VAR
+                            ;
   keyword_instruction       :   address_
                             |   arg_
                             |   call_
@@ -49,7 +52,7 @@ group_                      :   do_
                             |   select_
                             ;
   do_                       :   do_specification ncl? instruction_list? do_ending ;
-    do_ending               :   KWD_END VAR_SYMBOL? ncl? ;
+    do_ending               :   KWD_END var_symbol? ncl? ;
   if_                       :   KWD_IF expression ncl? then_ else_? ;
     then_                   :   KWD_THEN ncl? instruction ;
     else_                   :   KWD_ELSE ncl? instruction ;
@@ -95,7 +98,7 @@ address_                    :   KWD_ADDRESS
     adei                    :   error input?
                             |   input error?
                             ;
-resources                   :   ( KWD_STREAM | KWD_STEM ) VAR_SYMBOL ;
+resources                   :   ( KWD_STREAM | KWD_STEM ) var_symbol ;
 arg_                        :   KWD_ARG template_list? ;
 call_                       :   KWD_CALL ( callon_spec | function_name call_parms? ) ;
   callon_spec               :   KWD_ON callable_condition ( KWD_NAME function_name )?
@@ -104,7 +107,6 @@ call_                       :   KWD_CALL ( callon_spec | function_name call_parm
     callable_condition      :   KWD_ERROR
                             |   KWD_FAILURE
                             |   KWD_HALT
-                            |   KWD_NOTREADY
                             ;
   call_parms                :   BR_O expression_list? BR_C
                             |   expression_list
@@ -147,12 +149,12 @@ do_specification            :   do_repetitive
       dof                   :   KWD_FOR forexpr ;
         forexpr             :   expression ;
 drop_                       :   KWD_DROP variable_list ;
-  variable_list             :   ( vref | VAR_SYMBOL )+ ;
-    vref                    :   BR_O VAR_SYMBOL BR_C ;
+  variable_list             :   ( vref | var_symbol )+ ;
+    vref                    :   BR_O var_symbol BR_C ;
 exit_                       :   KWD_EXIT expression? ;
 interpret_                  :   KWD_INTERPRET expression ;
-iterate_                    :   KWD_ITERATE VAR_SYMBOL? ;
-leave_                      :   KWD_LEAVE VAR_SYMBOL? ;
+iterate_                    :   KWD_ITERATE var_symbol? ;
+leave_                      :   KWD_LEAVE var_symbol? ;
 nop_                        :   KWD_NOP ;
 numeric_                    :   KWD_NUMERIC ( numeric_digits | numeric_form | numeric_fuzz ) ;
   numeric_digits            :   KWD_DIGITS expression? ;
@@ -165,13 +167,14 @@ parse_                      :   KWD_PARSE KWD_UPPER? parse_type template_list? ;
                             |   parse_var
                             ;
     parse_key               :   KWD_ARG
+                            |   KWD_EXTERNAL
+                            |   KWD_NUMERIC
                             |   KWD_PULL
                             |   KWD_SOURCE
-                            |   KWD_LINEIN
                             |   KWD_VERSION
                             ;
     parse_value             :   KWD_VALUE expression? KWD_WITH ;
-    parse_var               :   KWD_VAR VAR_SYMBOL ;
+    parse_var               :   KWD_VAR var_symbol ;
 procedure_                  :   KWD_PROCEDURE ( KWD_EXPOSE variable_list )? ;
 pull_                       :   KWD_PULL template_list? ;
 push_                       :   KWD_PUSH expression? ;
@@ -185,7 +188,6 @@ signal_                     :   KWD_SIGNAL ( signal_spec | valueexp | taken_cons
     condition               :   callable_condition
                             |   KWD_NOVALUE
                             |   KWD_SYNTAX
-                            |   KWD_LOSTDIGITS
                             ;
 trace_                      :   KWD_TRACE ( NUMBER | trace_options )? ;
   trace_options             :   prefix_option* trace_option
@@ -205,13 +207,13 @@ trace_                      :   KWD_TRACE ( NUMBER | trace_options )? ;
                             |   KWD_RESULTS
                             |   KWD_SCAN
                             ;
-upper_                      :   KWD_UPPER VAR_SYMBOL+ ; // if stem -> signal of error (cannot do 'upper j.')
+upper_                      :   KWD_UPPER var_symbol+ ; // if stem -> signal of error (cannot do 'upper j.')
 
 /* Note: The next section describes templates. */
 template_list               :   COMMA* template_ ( COMMA+ template_ )* ;
 //  template_                 :   ( trigger_ | target_ )+? ;
   template_                 :   ( trigger_ | target_ )+ ;
-    target_                 :   VAR_SYMBOL
+    target_                 :   var_symbol
                             |   STOP
                             ;
     trigger_                :   pattern_
@@ -232,7 +234,7 @@ template_list               :   COMMA* template_ ( COMMA+ template_ )* ;
       relative_positional   :   (PLUS | MINUS) position_ ;
 
 // Note: The final part specifies the various forms of symbol, and expression.
-symbol                      :   VAR_SYMBOL
+symbol                      :   var_symbol
                             |   CONST_SYMBOL
                             |   NUMBER
                             ;
