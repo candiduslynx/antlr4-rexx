@@ -157,17 +157,15 @@ EXCLAMATION                     :   Exclamation_mark_ ;
 // --------------------------------------------------------
 // Fragments
 // Comments
-fragment Comment_               :   Comment_S Commentpart*? Comment_E ;
+fragment Comment_               :   Comment_S
+                                    Commentpart*? Asterisk_*?
+                                    (Comment_E | EOF) ;
 fragment Comment_E              :   Asterisk_ Slash_ ;
 fragment Comment_S              :   Slash_ Asterisk_ ;
 fragment Commentpart            :   Comment_
-                                |   Commentpart_simple_+?
+                                |   Slash_* ~[/*]+
+                                |   Asterisk_* ~[/*]+
                                 ;
-fragment Commentpart_simple_    :   Slash_
-                                |   Asterisk_
-                                |   Comment_char_
-                                ;
-fragment Comment_char_          :   ~[/*];
 // Whitespaces
 fragment Whitespaces_           :   Blank+ ;
 fragment Continue_              :   Comma_ ( Comment_ | Blank )*? Eol_;
@@ -242,15 +240,7 @@ fragment Plain_number           :   Digit_+ Stop_? Digit_*
                                 ;
 fragment Exponent_              :   E ( Plus_ | Minus_ )? Digit_+ ;
 // String and concatenation
-fragment String_                :   Extended_String_
-                                |   Simple_String_
-                                ;
-fragment Extended_String_       :   Hex_String
-                                |   Bin_String
-                                ;
-fragment Hex_String             :   Quoted_string X ;
-fragment Bin_String             :   Quoted_string B ;
-fragment Simple_String_         :   Quoted_string ;
+fragment String_                :   Quoted_string ;
 fragment Quoted_string          :   Quotation_mark_string
                                 |   Apostrophe_string
                                 ;
