@@ -26,7 +26,7 @@ single_instruction          :   assignment
                             |   keyword_instruction
                             |   command_
                             ;
-  assignment                :   ( VAR_SYMBOL | SPECIAL_VAR ) EQ expression ;
+  assignment                :   ( VAR_SYMBOL | SPECIAL_VAR | CONST_SYMBOL ) EQ expression ;
   keyword_instruction       :   address_
                             |   arg_
                             |   call_
@@ -74,13 +74,13 @@ do_                         :   KWD_DO do_rep? do_cond? ncl
     do_cond                 :   KWD_WHILE expression
                             |   KWD_UNTIL expression
                             ;
-  if_                       :   KWD_IF expression ncl? then_ (ncl else_)? ;
+  if_                       :   KWD_IF expression delim* then_ (delim+ else_)? ;
     then_                   :   KWD_THEN ncl? instruction ;
     else_                   :   KWD_ELSE ncl? instruction ;
-  select_                   :   KWD_SELECT ncl select_body KWD_END ncl? ;
+  select_                   :   KWD_SELECT delim+ select_body KWD_END ncl? ;
     select_body             :   when_+ otherwise_? ;
-      when_                 :   KWD_WHEN expression ncl? then_ ;
-      otherwise_            :   KWD_OTHERWISE ncl? instruction_list? ;
+      when_                 :   KWD_WHEN expression delim* then_ ;
+      otherwise_            :   KWD_OTHERWISE delim* instruction_list? ;
 
 /*
 Note: The next part concentrates on the instructions.
